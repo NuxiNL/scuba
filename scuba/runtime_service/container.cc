@@ -152,8 +152,7 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
   YAMLCanonicalizingFactory<const argdata_t*> canonicalizing_factory(
       &argdata_factory);
   YAMLBuilder<const argdata_t*> builder(&canonicalizing_factory);
-  const argdata_t* argdata;
-  argdata = builder.Build(argdata_);
+  const argdata_t* argdata = builder.Build(argdata_);
 
   // Fork and execute child process.
   int child = program_spawn(executable.get(), argdata);
