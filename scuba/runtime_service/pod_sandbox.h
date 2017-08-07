@@ -64,6 +64,7 @@ class PodSandbox {
   const google::protobuf::Map<std::string, std::string> annotations_;
   const IPAddressLease ip_address_lease_;
 
+  runtime::PodSandboxState state_;
   std::map<std::string, std::unique_ptr<Container>, std::less<>> containers_;
 
   PodSandbox(PodSandbox&) = delete;

@@ -33,6 +33,7 @@ using runtime::ContainerStatus;
 using runtime::PodSandboxConfig;
 using runtime::PodSandboxState;
 using runtime::PodSandboxStatus;
+using runtime::SANDBOX_NOTREADY;
 using runtime::SANDBOX_READY;
 using scuba::runtime_service::IPAddressLease;
 using scuba::runtime_service::PodSandbox;
@@ -44,12 +45,13 @@ PodSandbox::PodSandbox(const PodSandboxConfig& config,
       creation_time_(std::chrono::system_clock::now()),
       labels_(config.labels()),
       annotations_(config.annotations()),
-      ip_address_lease_(std::move(ip_address_lease)) {
+      ip_address_lease_(std::move(ip_address_lease)),
+      state_(SANDBOX_READY) {
 }
 
 void PodSandbox::GetInfo(runtime::PodSandbox* info) {
   *info->mutable_metadata() = metadata_;
-  info->set_state(SANDBOX_READY);
+  info->set_state(state_);
   info->set_created_at(
       std::chrono::nanoseconds(creation_time_.time_since_epoch()).count());
   *info->mutable_labels() = labels_;
@@ -58,7 +60,7 @@ void PodSandbox::GetInfo(runtime::PodSandbox* info) {
 
 void PodSandbox::GetStatus(PodSandboxStatus* status) {
   *status->mutable_metadata() = metadata_;
-  status->set_state(SANDBOX_READY);
+  status->set_state(state_);
   status->set_created_at(creation_time_.time_since_epoch().count());
   status->mutable_network()->set_ip(ip_address_lease_.GetString());
   *status->mutable_labels() = labels_;
@@ -66,15 +68,18 @@ void PodSandbox::GetStatus(PodSandboxStatus* status) {
 }
 
 void PodSandbox::Stop() {
-  // Do a forced stop of all containers in the pod sandbox.
+  // Do a forced stop of all containers in the pod sandbox. Switch the
+  // state to SANDBOX_NOTREADY. Otherwise, Kubernetes will not attempt
+  // to destroy it.
   for (const auto& container : containers_)
     container.second->Stop(0);
+  state_ = SANDBOX_NOTREADY;
 }
 
 bool PodSandbox::MatchesFilter(
     std::optional<PodSandboxState> state,
     const Map<std::string, std::string>& labels) const {
-  return (!state || *state == SANDBOX_READY) &&
+  return (!state || *state == state_) &&
          std::includes(labels_.begin(), labels_.end(), labels.begin(),
                        labels.end(),
                        std::less<std::pair<std::string, std::string>>());
@@ -82,6 +87,10 @@ bool PodSandbox::MatchesFilter(
 
 void PodSandbox::CreateContainer(std::string_view container_id,
                                  const ContainerConfig& config) {
+  if (state_ != SANDBOX_READY)
+    throw std::logic_error(std::string(container_id) +
+                           " has already been terminated");
+
   // Idempotence: only create the container if it doesn't exist yet.
   auto container = containers_.find(container_id);
   if (container == containers_.end())
@@ -99,6 +108,10 @@ void PodSandbox::StartContainer(std::string_view container_id,
                                 const FileDescriptor& root_directory,
                                 const FileDescriptor& image_directory,
                                 Switchboard::Stub* switchboard_servers) {
+  if (state_ != SANDBOX_READY)
+    throw std::logic_error(std::string(container_id) +
+                           " has already been terminated");
+
   auto container = containers_.find(container_id);
   if (container == containers_.end())
     throw std::invalid_argument(std::string(container_id) + " does not exist");
