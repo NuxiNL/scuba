@@ -3,7 +3,8 @@
 set -ex
 
 rm -Rf tmp
-mkdir -p tmp/scuba/runtime_service
+mkdir tmp
+
 find contrib -name '*.proto' | while read file; do
   protoc \
     -Icontrib \
@@ -17,17 +18,21 @@ find contrib -name '*.proto' | while read file; do
     --grpc_out=tmp \
     "${file}"
 done
-/usr/local/x86_64-unknown-cloudabi/bin/aprotoc \
-    < scuba/runtime_service/configuration.proto \
-    > tmp/scuba/runtime_service/configuration.ad.h
 
-x86_64-unknown-cloudabi-c++ \
-  -Wall -Werror \
-  -std=c++1z -O2 \
-  -Itmp \
-  -I. \
-  $(find scuba tmp -name '*.cc') -o scuba_runtime_service \
-  -larpc -lgrpc++_unsecure -lgrpc_unsecure -lgpr -lcares -lprotobuf \
-  -lpthread -lyaml-cpp -lz
+for i in image_service runtime_service; do
+  mkdir -p tmp/scuba/${i}
+  /usr/local/x86_64-unknown-cloudabi/bin/aprotoc \
+      < scuba/${i}/configuration.proto \
+      > tmp/scuba/${i}/configuration.ad.h
+
+  x86_64-unknown-cloudabi-c++ \
+    -Wall -Werror \
+    -std=c++1z -O2 \
+    -Itmp \
+    -I. \
+    $(find scuba/${i} tmp -name '*.cc') -o scuba_${i}\
+    -larpc -lgrpc++_unsecure -lgrpc_unsecure -lgpr -lcares -lprotobuf \
+    -lpthread -lyaml-cpp -lz
+done
 
 find scuba -name '*.cc' -o -name '*.h' -exec clang-format -i {} +

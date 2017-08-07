@@ -1,4 +1,5 @@
 *.core
 .*.swp
+/scuba_image_service
 /scuba_runtime_service
 /tmp
