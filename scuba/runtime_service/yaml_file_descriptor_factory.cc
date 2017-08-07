@@ -60,8 +60,12 @@ const argdata_t* YAMLFileDescriptorFactory::GetMap(
     request.add_rights(Right::SERVER_START);
     auto labels = request.mutable_in_labels();
     (*labels)["server_kubernetes_namespace"] = pod_metadata_->namespace_();
-    (*labels)["server_kubernetes_pod"] = pod_metadata_->name();
-    (*labels)["server_kubernetes_container"] = container_metadata_->name();
+    (*labels)["server_kubernetes_pod_name"] = pod_metadata_->name();
+    (*labels)["server_kubernetes_pod_attempt"] =
+        std::to_string(pod_metadata_->attempt());
+    (*labels)["server_kubernetes_container_name"] = container_metadata_->name();
+    (*labels)["server_kubernetes_container_attempt"] =
+        std::to_string(container_metadata_->attempt());
     for (size_t i = 0; i < keys.size(); ++i) {
       std::optional<std::string_view> key = keys[i]->get_str();
       std::optional<std::string_view> value = values[i]->get_str();
