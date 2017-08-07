@@ -35,4 +35,4 @@ for i in image_service runtime_service; do
     -lpthread -lyaml-cpp -lz
 done
 
-find scuba -name '*.cc' -o -name '*.h' -exec clang-format -i {} +
+find scuba \( -name '*.cc' -o -name '*.h' \) -exec clang-format -i {} +

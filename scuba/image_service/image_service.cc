@@ -47,8 +47,8 @@ class DirDeleter {
 }  // namespace
 
 Status ImageService::ListImages(ServerContext* context,
-                                      const ListImagesRequest* request,
-                                      ListImagesResponse* response) {
+                                const ListImagesRequest* request,
+                                ListImagesResponse* response) {
   std::unique_ptr<DIR, DirDeleter> directory(
       opendirat(image_directory_->get(), "."));
   if (!directory)
@@ -77,14 +77,13 @@ Status ImageService::ListImages(ServerContext* context,
   return Status::OK;
 }
 
-Status ImageService::ImageStatus(
-    ServerContext* context, const ImageStatusRequest* request,
-    ImageStatusResponse* response) {
+Status ImageService::ImageStatus(ServerContext* context,
+                                 const ImageStatusRequest* request,
+                                 ImageStatusResponse* response) {
   const std::string& image_name = request->image().image();
   if (!IsLocalImageName_(image_name)) {
     // TODO(ed): Implement.
-    return {StatusCode::UNIMPLEMENTED,
-            "ImageStatus by URL not implemented"};
+    return {StatusCode::UNIMPLEMENTED, "ImageStatus by URL not implemented"};
   }
 
   stat sb;
@@ -100,8 +99,8 @@ Status ImageService::ImageStatus(
 }
 
 Status ImageService::PullImage(ServerContext* context,
-                                     const PullImageRequest* request,
-                                     PullImageResponse* response) {
+                               const PullImageRequest* request,
+                               PullImageResponse* response) {
   const std::string& image_name = request->image().image();
   if (IsLocalImageName_(image_name)) {
     return {StatusCode::INVALID_ARGUMENT,
@@ -111,14 +110,13 @@ Status ImageService::PullImage(ServerContext* context,
   return {StatusCode::UNIMPLEMENTED, "PullImage by URL not implemented"};
 }
 
-Status ImageService::RemoveImage(
-    ServerContext* context, const RemoveImageRequest* request,
-    RemoveImageResponse* response) {
+Status ImageService::RemoveImage(ServerContext* context,
+                                 const RemoveImageRequest* request,
+                                 RemoveImageResponse* response) {
   const std::string& image_name = request->image().image();
   if (!IsLocalImageName_(image_name)) {
     // TODO(ed): Look up canonical name.
-    return {StatusCode::UNIMPLEMENTED,
-            "RemoveImage by URL not implemented"};
+    return {StatusCode::UNIMPLEMENTED, "RemoveImage by URL not implemented"};
   }
 
   if (unlinkat(image_directory_->get(), image_name.c_str(), 0) != 0 &&
@@ -127,9 +125,9 @@ Status ImageService::RemoveImage(
   return Status::OK;
 }
 
-Status ImageService::ImageFsInfo(
-    ServerContext* context, const ImageFsInfoRequest* request,
-    ImageFsInfoResponse* response) {
+Status ImageService::ImageFsInfo(ServerContext* context,
+                                 const ImageFsInfoRequest* request,
+                                 ImageFsInfoResponse* response) {
   return {StatusCode::UNIMPLEMENTED, "ImageFsInfo not implemented"};
 }
 
