@@ -25,6 +25,7 @@
 #include <thread>
 
 #include <google/protobuf/map.h>
+#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.h>
 #include <yaml-cpp/exceptions.h>
 #include <argdata.hpp>
 

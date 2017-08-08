@@ -14,7 +14,7 @@
 #include <vector>
 
 #include <flower/protocol/switchboard.ad.h>
-#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.h>
+#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.h>
 #include <argdata.hpp>
 
 #include <scuba/runtime_service/yaml_factory.h>

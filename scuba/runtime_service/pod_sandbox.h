@@ -19,7 +19,7 @@
 #include <arpc++/arpc++.h>
 #include <flower/protocol/switchboard.ad.h>
 #include <google/protobuf/map.h>
-#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.h>
+#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.h>
 
 #include <scuba/runtime_service/container.h>
 #include <scuba/runtime_service/ip_address_allocator.h>

@@ -16,7 +16,7 @@
 #include <flower/protocol/switchboard.ad.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/repeated_field.h>
-#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.h>
+#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.h>
 
 namespace scuba {
 namespace runtime_service {
