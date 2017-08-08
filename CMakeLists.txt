@@ -44,16 +44,15 @@ if(NOT GRPC_CPP_PLUGIN_COMMAND)
 	message(FATAL_ERROR "Could not find grpc_cpp_plugin, set GRPC_CPP_PLUGIN_NAME")
 endif()
 
-# TODO(ed): Remove references to /usr/local/*!
 function(add_protoc base)
 	add_custom_command(
 		OUTPUT ${base}.pb.cc ${base}.pb.h
-		COMMAND ${PROTOC_COMMAND} -I/usr/local/x86_64-unknown-cloudabi/include -I${CMAKE_SOURCE_DIR}/contrib --cpp_out=${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/contrib/${base}.proto
+		COMMAND ${PROTOC_COMMAND} -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_SOURCE_DIR}/contrib --cpp_out=${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/contrib/${base}.proto
 		DEPENDS ${CMAKE_SOURCE_DIR}/contrib/${base}.proto
 	)
 	add_custom_command(
 		OUTPUT ${base}.grpc.pb.cc ${base}.grpc.pb.h
-		COMMAND ${PROTOC_COMMAND} -I/usr/local/x86_64-unknown-cloudabi/include -I${CMAKE_SOURCE_DIR}/contrib --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN_COMMAND} --grpc_out=${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/contrib/${base}.proto
+		COMMAND ${PROTOC_COMMAND} -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_SOURCE_DIR}/contrib --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN_COMMAND} --grpc_out=${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/contrib/${base}.proto
 		DEPENDS ${CMAKE_SOURCE_DIR}/contrib/${base}.proto
 	)
 endfunction()
