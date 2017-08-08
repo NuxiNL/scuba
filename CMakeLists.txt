@@ -47,9 +47,7 @@ endif()
 # TODO(ed): Remove references to /usr/local/*!
 function(add_protoc base)
 	add_custom_command(
-		OUTPUT
-			${base}.pb.cc
-			${base}.pb.h
+		OUTPUT ${base}.pb.cc ${base}.pb.h
 		COMMAND ${PROTOC_COMMAND} -I/usr/local/x86_64-unknown-cloudabi/include -I${CMAKE_SOURCE_DIR}/contrib --cpp_out=${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/contrib/${base}.proto
 		DEPENDS ${CMAKE_SOURCE_DIR}/contrib/${base}.proto
 	)
