@@ -2,12 +2,8 @@ add_aprotoc(scuba/image_service/configuration)
 
 add_executable(
 	scuba_image_service
-	github.com/gogo/protobuf/gogoproto/gogo.pb.cc
-	github.com/gogo/protobuf/gogoproto/gogo.pb.h
-	k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.cc
-	k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.h
-	k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.cc
-	k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.h
+	${KUBERNETES_GRPC_HDRS}
+	${KUBERNETES_PROTOBUF_HDRS}
 	scuba/image_service/configuration.ad.h
 	scuba/image_service/image_service.cc
 	scuba/image_service/program_main.cc
@@ -15,6 +11,7 @@ add_executable(
 
 target_link_libraries(
 	scuba_image_service
+	kubernetes_cri_lib
 	Threads::Threads
 	arpc
 	cares

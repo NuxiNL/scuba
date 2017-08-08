@@ -7,8 +7,15 @@ include(GNUInstallDirs)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(PROTOBUF_GENERATE_CPP_APPEND_PATH OFF)
 
+find_package(Protobuf REQUIRED)
 find_package(Threads REQUIRED)
+
+include_directories(
+	${CMAKE_SOURCE_DIR}
+	${CMAKE_BINARY_DIR}
+)
 
 set(APROTOC_NAME "aprotoc" CACHE STRING "Name of the aprotoc command")
 find_program(APROTOC_COMMAND ${APROTOC_NAME})
@@ -31,36 +38,28 @@ function(add_aprotoc base)
 	)
 endfunction()
 
-set(PROTOC_NAME "protoc" CACHE STRING "Name of the protoc command")
-find_program(PROTOC_COMMAND ${PROTOC_NAME})
-mark_as_advanced(PROTOC_COMMAND)
-if(NOT PROTOC_COMMAND)
-	message(FATAL_ERROR "Could not find protoc, set PROTOC_NAME")
-endif()
-set(GRPC_CPP_PLUGIN_NAME "grpc_cpp_plugin" CACHE STRING "Name of the grpc_cpp_plugin command")
-find_program(GRPC_CPP_PLUGIN_COMMAND ${GRPC_CPP_PLUGIN_NAME})
-mark_as_advanced(GRPC_CPP_PLUGIN_COMMAND)
-if(NOT GRPC_CPP_PLUGIN_COMMAND)
-	message(FATAL_ERROR "Could not find grpc_cpp_plugin, set GRPC_CPP_PLUGIN_NAME")
-endif()
+include(cmake/gRPC.txt)
 
-function(add_protoc base)
-	add_custom_command(
-		OUTPUT ${base}.pb.cc ${base}.pb.h
-		COMMAND ${PROTOC_COMMAND} -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_SOURCE_DIR}/contrib --cpp_out=${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/contrib/${base}.proto
-		DEPENDS ${CMAKE_SOURCE_DIR}/contrib/${base}.proto
-	)
-	add_custom_command(
-		OUTPUT ${base}.grpc.pb.cc ${base}.grpc.pb.h
-		COMMAND ${PROTOC_COMMAND} -I${CMAKE_INSTALL_PREFIX}/include -I${CMAKE_SOURCE_DIR}/contrib --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN_COMMAND} --grpc_out=${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/contrib/${base}.proto
-		DEPENDS ${CMAKE_SOURCE_DIR}/contrib/${base}.proto
-	)
-endfunction()
+protobuf_generate_cpp(
+	KUBERNETES_PROTOBUF_SRCS
+	KUBERNETES_PROTOBUF_HDRS
+	github.com/gogo/protobuf/gogoproto/gogo.proto
+	k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.proto
+)
+grpc_generate_cpp(
+	KUBERNETES_GRPC_SRCS
+	KUBERNETES_GRPC_HDRS
+	github.com/gogo/protobuf/gogoproto/gogo.proto
+	k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.proto
+)
 
-add_protoc(github.com/gogo/protobuf/gogoproto/gogo)
-add_protoc(k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api)
-
-include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
+add_library(
+	kubernetes_cri_lib
+	${KUBERNETES_PROTOBUF_SRCS}
+	${KUBERNETES_PROTOBUF_HDRS}
+	${KUBERNETES_GRPC_SRCS}
+	${KUBERNETES_GRPC_HDRS}
+)
 
 include(scuba/image_service/CMakeLists.txt)
 include(scuba/runtime_service/CMakeLists.txt)
