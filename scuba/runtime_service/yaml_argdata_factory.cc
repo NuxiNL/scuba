@@ -3,10 +3,12 @@
 // This file is distributed under a 2-clause BSD license.
 // See the LICENSE file for details.
 
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include <yaml-cpp/exceptions.h>
 #include <yaml-cpp/mark.h>
 #include <argdata.hpp>
 
@@ -21,8 +23,16 @@ const argdata_t* YAMLArgdataFactory::GetNull(const YAML::Mark& mark) {
 const argdata_t* YAMLArgdataFactory::GetScalar(const YAML::Mark& mark,
                                                std::string_view tag,
                                                std::string_view value) {
-  // TODO(ed): Add support for booleans, integers, etc.
-  if (tag == "tag:yaml.org,2002:str") {
+  // TODO(ed): Add support for integers, etc.
+  if (tag == "tag:yaml.org,2002:bool") {
+    if (value == "true")
+      return argdata_t::true_();
+    if (value == "false")
+      return argdata_t::false_();
+    std::ostringstream ss;
+    ss << "Unknown boolean value: " << value;
+    throw YAML::ParserException(mark, ss.str());
+  } else if (tag == "tag:yaml.org,2002:str") {
     return argdatas_
         .emplace_back(argdata_t::create_str(strings_.emplace_front(value)))
         .get();
