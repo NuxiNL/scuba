@@ -36,6 +36,7 @@
 #include <scuba/runtime_service/yaml_canonicalizing_factory.h>
 #include <scuba/runtime_service/yaml_error_factory.h>
 #include <scuba/runtime_service/yaml_file_descriptor_factory.h>
+#include <scuba/util/fd_streambuf.h>
 
 using arpc::FileDescriptor;
 using flower::protocol::switchboard::Switchboard;
@@ -48,6 +49,7 @@ using runtime::ContainerState;
 using runtime::ContainerStatus;
 using runtime::PodSandboxMetadata;
 using scuba::runtime_service::Container;
+using scuba::util::fd_streambuf;
 
 Container::Container(const ContainerConfig& config)
     : metadata_(config.metadata()),
@@ -207,48 +209,45 @@ std::unique_ptr<FileDescriptor> Container::OpenContainerLog_(
   auto readfd = std::make_unique<FileDescriptor>(pipefds[0]);
   auto writefd = std::make_unique<FileDescriptor>(pipefds[1]);
 
-#if 0  // TODO(ed): Fix!
   // Read messages from the pipe and write them into the log file in the
   // format that Kubernetes expects.
-  std::thread(
-      [logfd{std::move(logfd)}, readfd{std::move(readfd)}]() {
-        // Startup message.
-        logfile << ISO8601Timestamp() << " stderr --- Logging started"
-                << std::endl;
+  std::thread([ logfd{std::move(logfd)}, readfd{std::move(readfd)} ]() mutable {
+    // Startup message.
+    fd_streambuf logstreambuf(std::move(logfd));
+    std::ostream logfile(&logstreambuf);
+    logfile << ISO8601Timestamp() << " stderr --- Logging started" << std::endl;
 
-        // Processing of logs written by the container.
-        ssize_t input_length;
-        bool line_start = true;
-        for (;;) {
-          char input_buffer[4096];
-          input_length = read(readfd.get(), input_buffer, sizeof(input_buffer));
-          if (input_length <= 0)
-            break;
+    // Processing of logs written by the container.
+    ssize_t input_length;
+    bool line_start = true;
+    for (;;) {
+      char input_buffer[4096];
+      input_length = read(readfd->get(), input_buffer, sizeof(input_buffer));
+      if (input_length <= 0)
+        break;
 
-          std::optional<ISO8601Timestamp> now;
-          for (char c : std::string_view(input_buffer, input_length)) {
-            if (line_start) {
-              if (!now)
-                now = ISO8601Timestamp();
-              logfile << *now << " stdout ";
-              line_start = false;
-            }
-            logfile << c;
-            if (c == '\n')
-              line_start = true;
-          }
-          logfile << std::flush;
+      std::optional<ISO8601Timestamp> now;
+      for (char c : std::string_view(input_buffer, input_length)) {
+        if (line_start) {
+          if (!now)
+            now = ISO8601Timestamp();
+          logfile << *now << " stdout ";
+          line_start = false;
         }
-        if (!line_start)
-          logfile << std::endl;
+        logfile << c;
+        if (c == '\n')
+          line_start = true;
+      }
+      logfile << std::flush;
+    }
+    if (!line_start)
+      logfile << std::endl;
 
-        // Termination message.
-        logfile << ISO8601Timestamp() << " stderr --- Logging stopped: "
-                << (input_length == 0 ? "Pipe closed by container"
-                                      : std::strerror(errno))
-                << std::endl;
-      })
-      .detach();
-#endif
+    // Termination message.
+    logfile << ISO8601Timestamp() << " stderr --- Logging stopped: "
+            << (input_length == 0 ? "Pipe closed by container"
+                                  : std::strerror(errno))
+            << std::endl;
+  }).detach();
   return writefd;
 }
