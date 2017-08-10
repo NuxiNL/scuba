@@ -100,8 +100,7 @@ void PodSandbox::CreateContainer(std::string_view container_id,
 }
 
 void PodSandbox::RemoveContainer(std::string_view container_id) {
-  // TODO(ed): Why can't we call erase() without casting?
-  containers_.erase(std::string(container_id));
+  containers_.erase(containers_.find(container_id));
 }
 
 void PodSandbox::StartContainer(std::string_view container_id,
