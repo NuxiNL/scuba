@@ -100,7 +100,6 @@ Status RuntimeService::RunPodSandbox(ServerContext* context,
   // Idempotence: only create the pod sandbox if it doesn't exist yet.
   auto pod_sandbox = pod_sandboxes_.find(pod_sandbox_id);
   if (pod_sandbox == pod_sandboxes_.end()) {
-    // TODO(ed): Allow 'host_net' containers!
     IPAddressLease ip_address_lease;
     try {
       ip_address_lease = ip_address_allocator_->Allocate();
