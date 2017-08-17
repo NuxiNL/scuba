@@ -29,4 +29,4 @@ std::ostream& operator<<(std::ostream& stream, const ISO8601Timestamp& time) {
 }
 
 }  // namespace runtime_service
-}  // namespace
+}  // namespace scuba

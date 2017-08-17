@@ -49,6 +49,6 @@ class ImageService final : public runtime::ImageService::Service {
 };
 
 }  // namespace image_service
-}  // namesapce scuba
+}  // namespace scuba
 
 #endif
