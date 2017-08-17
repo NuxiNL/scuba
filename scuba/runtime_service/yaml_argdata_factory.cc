@@ -45,9 +45,11 @@ const argdata_t* YAMLArgdataFactory::GetSequence(
     const YAML::Mark& mark, std::string_view tag,
     std::vector<const argdata_t*> elements) {
   if (tag == "tag:yaml.org,2002:seq") {
+    std::vector<const argdata_t*>* stored_elements =
+        &lists_.emplace_front(std::move(elements));
     return argdatas_
-        .emplace_back(
-            argdata_t::create_seq(lists_.emplace_front(std::move(elements))))
+        .emplace_back(argdata_t::create_seq(
+            {stored_elements->data(), stored_elements->size()}))
         .get();
   } else {
     return fallback_->GetSequence(mark, tag, std::move(elements));
@@ -58,10 +60,14 @@ const argdata_t* YAMLArgdataFactory::GetMap(
     const YAML::Mark& mark, std::string_view tag,
     std::vector<const argdata_t*> keys, std::vector<const argdata_t*> values) {
   if (tag == "tag:yaml.org,2002:map") {
+    std::vector<const argdata_t*>* stored_keys =
+        &lists_.emplace_front(std::move(keys));
+    std::vector<const argdata_t*>* stored_values =
+        &lists_.emplace_front(std::move(values));
     return argdatas_
-        .emplace_back(
-            argdata_t::create_map(lists_.emplace_front(std::move(keys)),
-                                  lists_.emplace_front(std::move(values))))
+        .emplace_back(argdata_t::create_map(
+            {stored_keys->data(), stored_keys->size()},
+            {stored_values->data(), stored_values->size()}))
         .get();
   } else {
     return fallback_->GetMap(mark, tag, std::move(keys), std::move(values));
