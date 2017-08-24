@@ -202,7 +202,6 @@ std::unique_ptr<FileDescriptor> Container::OpenContainerLog_(
   if (pipe(pipefds) != 0)
     throw std::system_error(errno, std::system_category(),
                             "Failed to create pipe");
-  // TODO(ed): Restrict Capsicum rights?
   auto readfd = std::make_unique<FileDescriptor>(pipefds[0]);
   auto writefd = std::make_unique<FileDescriptor>(pipefds[1]);
 
