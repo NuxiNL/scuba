@@ -41,9 +41,6 @@
 using arpc::FileDescriptor;
 using flower::protocol::switchboard::Switchboard;
 using google::protobuf::Map;
-using runtime::CONTAINER_CREATED;
-using runtime::CONTAINER_EXITED;
-using runtime::CONTAINER_RUNNING;
 using runtime::ContainerConfig;
 using runtime::ContainerState;
 using runtime::ContainerStatus;
@@ -60,7 +57,7 @@ Container::Container(const ContainerConfig& config)
       mounts_(config.mounts()),
       log_path_(config.log_path()),
       argdata_(config.argdata()),
-      container_state_(CONTAINER_CREATED) {
+      container_state_(ContainerState::CONTAINER_CREATED) {
 }
 
 void Container::GetInfo(runtime::Container* info) {
@@ -79,16 +76,16 @@ void Container::GetStatus(ContainerStatus* status) {
   ContainerState state = GetContainerState_();
   status->set_state(state);
   switch (state) {
-    case CONTAINER_EXITED:
+    case ContainerState::CONTAINER_EXITED:
       status->set_finished_at(
           std::chrono::nanoseconds(finish_time_.time_since_epoch()).count());
       status->set_exit_code(exit_code_);
       [[fallthrough]];
-    case CONTAINER_RUNNING:
+    case ContainerState::CONTAINER_RUNNING:
       status->set_started_at(
           std::chrono::nanoseconds(start_time_.time_since_epoch()).count());
       [[fallthrough]];
-    case CONTAINER_CREATED:
+    case ContainerState::CONTAINER_CREATED:
       status->set_created_at(
           std::chrono::nanoseconds(creation_time_.time_since_epoch()).count());
       break;
@@ -118,7 +115,7 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
                       const FileDescriptor& log_directory,
                       Switchboard::Stub* switchboard_servers) {
   // Idempotence: container may already have been started.
-  if (container_state_ != CONTAINER_CREATED)
+  if (container_state_ != ContainerState::CONTAINER_CREATED)
     return;
 
   // Open the executable.
@@ -162,27 +159,27 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
   if (child < 0)
     throw std::system_error(errno, std::system_category(),
                             "Failed to fork process");
-  container_state_ = CONTAINER_RUNNING;
+  container_state_ = ContainerState::CONTAINER_RUNNING;
   child_process_.emplace(child);
   start_time_ = std::chrono::system_clock::now();
 }
 
 void Container::Stop(std::int64_t timeout) {
-  if (container_state_ == CONTAINER_RUNNING) {
+  if (container_state_ == ContainerState::CONTAINER_RUNNING) {
     child_process_.reset();
-    container_state_ = CONTAINER_EXITED;
+    container_state_ = ContainerState::CONTAINER_EXITED;
     finish_time_ = std::chrono::system_clock::now();
     exit_code_ = SIGKILL;
   }
 }
 
 ContainerState Container::GetContainerState_() {
-  if (container_state_ == CONTAINER_RUNNING) {
+  if (container_state_ == ContainerState::CONTAINER_RUNNING) {
     siginfo_t si;
     pdwait(child_process_->get(), &si, WNOHANG);
     if (si.si_signo == SIGCHLD) {
       child_process_.reset();
-      container_state_ = CONTAINER_EXITED;
+      container_state_ = ContainerState::CONTAINER_EXITED;
       finish_time_ = std::chrono::system_clock::now();
       exit_code_ = si.si_status;
     }

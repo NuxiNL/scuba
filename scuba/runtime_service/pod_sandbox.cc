@@ -33,8 +33,6 @@ using runtime::ContainerStatus;
 using runtime::PodSandboxConfig;
 using runtime::PodSandboxState;
 using runtime::PodSandboxStatus;
-using runtime::SANDBOX_NOTREADY;
-using runtime::SANDBOX_READY;
 using scuba::runtime_service::IPAddressLease;
 using scuba::runtime_service::PodSandbox;
 
@@ -46,7 +44,7 @@ PodSandbox::PodSandbox(const PodSandboxConfig& config,
       labels_(config.labels()),
       annotations_(config.annotations()),
       ip_address_lease_(std::move(ip_address_lease)),
-      state_(SANDBOX_READY) {
+      state_(PodSandboxState::SANDBOX_READY) {
 }
 
 void PodSandbox::GetInfo(runtime::PodSandbox* info) {
@@ -73,7 +71,7 @@ void PodSandbox::Stop() {
   // to destroy it.
   for (const auto& container : containers_)
     container.second->Stop(0);
-  state_ = SANDBOX_NOTREADY;
+  state_ = PodSandboxState::SANDBOX_NOTREADY;
 }
 
 bool PodSandbox::MatchesFilter(
@@ -87,7 +85,7 @@ bool PodSandbox::MatchesFilter(
 
 void PodSandbox::CreateContainer(std::string_view container_id,
                                  const ContainerConfig& config) {
-  if (state_ != SANDBOX_READY)
+  if (state_ != PodSandboxState::SANDBOX_READY)
     throw std::logic_error(std::string(container_id) +
                            " has already been terminated");
 
@@ -107,7 +105,7 @@ void PodSandbox::StartContainer(std::string_view container_id,
                                 const FileDescriptor& root_directory,
                                 const FileDescriptor& image_directory,
                                 Switchboard::Stub* switchboard_servers) {
-  if (state_ != SANDBOX_READY)
+  if (state_ != PodSandboxState::SANDBOX_READY)
     throw std::logic_error(std::string(container_id) +
                            " has already been terminated");
 
