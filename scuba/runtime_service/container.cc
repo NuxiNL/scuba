@@ -26,14 +26,14 @@
 
 #include <google/protobuf/map.h>
 #include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.h>
+#include <yaml2argdata/yaml_argdata_factory.h>
+#include <yaml2argdata/yaml_builder.h>
+#include <yaml2argdata/yaml_canonicalizing_factory.h>
+#include <yaml2argdata/yaml_error_factory.h>
 #include <argdata.hpp>
 
 #include <scuba/runtime_service/iso8601_timestamp.h>
 #include <scuba/runtime_service/pod_sandbox.h>
-#include <scuba/runtime_service/yaml_argdata_factory.h>
-#include <scuba/runtime_service/yaml_builder.h>
-#include <scuba/runtime_service/yaml_canonicalizing_factory.h>
-#include <scuba/runtime_service/yaml_error_factory.h>
 #include <scuba/runtime_service/yaml_file_descriptor_factory.h>
 #include <scuba/util/fd_streambuf.h>
 
@@ -46,6 +46,10 @@ using runtime::ContainerStatus;
 using runtime::PodSandboxMetadata;
 using scuba::runtime_service::Container;
 using scuba::util::fd_streambuf;
+using yaml2argdata::YAMLArgdataFactory;
+using yaml2argdata::YAMLBuilder;
+using yaml2argdata::YAMLCanonicalizingFactory;
+using yaml2argdata::YAMLErrorFactory;
 
 Container::Container(const ContainerConfig& config)
     : metadata_(config.metadata()),

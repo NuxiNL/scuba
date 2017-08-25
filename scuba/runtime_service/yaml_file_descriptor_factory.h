@@ -17,12 +17,13 @@
 #include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.h>
 #include <argdata.hpp>
 
-#include <scuba/runtime_service/yaml_factory.h>
+#include <yaml2argdata/yaml_factory.h>
 
 namespace scuba {
 namespace runtime_service {
 
-class YAMLFileDescriptorFactory : public YAMLFactory<const argdata_t*> {
+class YAMLFileDescriptorFactory
+    : public yaml2argdata::YAMLFactory<const argdata_t*> {
  public:
   YAMLFileDescriptorFactory(
       const runtime::PodSandboxMetadata* pod_metadata,

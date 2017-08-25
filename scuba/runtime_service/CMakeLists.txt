@@ -12,7 +12,6 @@ add_executable(
 	scuba/runtime_service/pod_sandbox.cc
 	scuba/runtime_service/program_main.cc
 	scuba/runtime_service/runtime_service.cc
-	scuba/runtime_service/yaml_argdata_factory.cc
 	scuba/runtime_service/yaml_file_descriptor_factory.cc
 )
 
