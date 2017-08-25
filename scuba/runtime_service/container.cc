@@ -26,7 +26,6 @@
 
 #include <google/protobuf/map.h>
 #include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.h>
-#include <yaml-cpp/exceptions.h>
 #include <argdata.hpp>
 
 #include <scuba/runtime_service/iso8601_timestamp.h>
