@@ -19,6 +19,7 @@
 #include <fstream>
 #include <functional>
 #include <iomanip>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -155,7 +156,8 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
   YAMLCanonicalizingFactory<const argdata_t*> canonicalizing_factory(
       &argdata_factory);
   YAMLBuilder<const argdata_t*> builder(&canonicalizing_factory);
-  const argdata_t* argdata = builder.Build(argdata_);
+  std::istringstream argdata_stream(argdata_);
+  const argdata_t* argdata = builder.Build(&argdata_stream);
 
   // Fork and execute child process.
   int child = program_spawn(executable.get(), argdata);
