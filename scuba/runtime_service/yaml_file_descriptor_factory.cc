@@ -88,9 +88,8 @@ const argdata_t* YAMLFileDescriptorFactory::GetMap(
             switchboard_servers_->Constrain(&context, request, &response);
         !status.ok())
       throw YAML::ParserException(
-          mark,
-          std::string("Failed to constrain switchboard channel: ") +
-              status.error_message());
+          mark, std::string("Failed to constrain switchboard channel: ") +
+                    status.error_message());
     if (!response.switchboard())
       throw YAML::ParserException(
           mark, "Switchboard did not return a file descriptor");

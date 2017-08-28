@@ -34,12 +34,12 @@ class Container {
       std::optional<runtime::ContainerState> state,
       const google::protobuf::Map<std::string, std::string>& labels);
 
-  void Start(
-      const runtime::PodSandboxMetadata& pod_metadata,
-      const arpc::FileDescriptor& root_directory,
-      const arpc::FileDescriptor& image_directory,
-      const arpc::FileDescriptor& log_directory,
-      flower::protocol::switchboard::Switchboard::Stub* switchboard_servers);
+  void Start(const runtime::PodSandboxMetadata& pod_metadata,
+             const arpc::FileDescriptor& root_directory,
+             const arpc::FileDescriptor& image_directory,
+             const arpc::FileDescriptor& log_directory,
+             flower::protocol::switchboard::Switchboard::Stub*
+                 containers_switchboard_handle);
   void Stop(std::int64_t timeout);
 
   Container(Container&) = delete;

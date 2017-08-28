@@ -101,10 +101,10 @@ void PodSandbox::RemoveContainer(std::string_view container_id) {
   containers_.erase(containers_.find(container_id));
 }
 
-void PodSandbox::StartContainer(std::string_view container_id,
-                                const FileDescriptor& root_directory,
-                                const FileDescriptor& image_directory,
-                                Switchboard::Stub* switchboard_servers) {
+void PodSandbox::StartContainer(
+    std::string_view container_id, const FileDescriptor& root_directory,
+    const FileDescriptor& image_directory,
+    Switchboard::Stub* containers_switchboard_handle) {
   if (state_ != PodSandboxState::SANDBOX_READY)
     throw std::logic_error(std::string(container_id) +
                            " has already been terminated");
@@ -121,7 +121,7 @@ void PodSandbox::StartContainer(std::string_view container_id,
   if (fd < 0)
     throw std::system_error(errno, std::system_category(), log_directory_);
   container->second->Start(metadata_, root_directory, image_directory,
-                           FileDescriptor(fd), switchboard_servers);
+                           FileDescriptor(fd), containers_switchboard_handle);
 }
 
 bool PodSandbox::StopContainer(std::string_view container_id,

@@ -26,8 +26,8 @@ syntax = 'proto3';
 package scuba.runtime_service;
 
 message Configuration {
-  fd cri_socket = 1;
+  fd cri_switchboard_handle = 1;
   fd image_directory = 2;
   fd root_directory = 3;
-  fd switchboard_servers = 4;
+  fd containers_switchboard_handle = 4;
 }

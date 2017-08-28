@@ -117,7 +117,7 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
                       const FileDescriptor& root_directory,
                       const FileDescriptor& image_directory,
                       const FileDescriptor& log_directory,
-                      Switchboard::Stub* switchboard_servers) {
+                      Switchboard::Stub* containers_switchboard_handle) {
   // Idempotence: container may already have been started.
   if (container_state_ != ContainerState::CONTAINER_CREATED)
     return;
@@ -151,7 +151,7 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
   YAMLErrorFactory<const argdata_t*> error_factory;
   YAMLFileDescriptorFactory file_descriptor_factory(
       &pod_metadata, &metadata_, container_log.get(), &mounts,
-      switchboard_servers, &error_factory);
+      containers_switchboard_handle, &error_factory);
   YAMLArgdataFactory argdata_factory(&file_descriptor_factory);
   YAMLCanonicalizingFactory<const argdata_t*> canonicalizing_factory(
       &argdata_factory);
@@ -249,6 +249,7 @@ std::unique_ptr<FileDescriptor> Container::OpenContainerLog_(
             << (input_length == 0 ? "Pipe closed by container"
                                   : std::strerror(errno))
             << std::endl;
-  }).detach();
+  })
+      .detach();
   return writefd;
 }

@@ -26,6 +26,6 @@ syntax = 'proto3';
 package scuba.image_service;
 
 message Configuration {
-  fd cri_socket = 1;
+  fd cri_switchboard_handle = 1;
   fd image_directory = 2;
 }

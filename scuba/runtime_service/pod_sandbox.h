@@ -43,10 +43,11 @@ class PodSandbox {
   void CreateContainer(std::string_view container_id,
                        const runtime::ContainerConfig& config);
   void RemoveContainer(std::string_view container_id);
-  void StartContainer(
-      std::string_view container_id, const arpc::FileDescriptor& root_directory,
-      const arpc::FileDescriptor& image_directory,
-      flower::protocol::switchboard::Switchboard::Stub* switchboard_servers);
+  void StartContainer(std::string_view container_id,
+                      const arpc::FileDescriptor& root_directory,
+                      const arpc::FileDescriptor& image_directory,
+                      flower::protocol::switchboard::Switchboard::Stub*
+                          containers_switchboard_handle);
   bool StopContainer(std::string_view container_id, std::int64_t timeout);
   std::vector<std::pair<std::string, runtime::Container>> GetContainerInfo(
       std::string_view container_id,
