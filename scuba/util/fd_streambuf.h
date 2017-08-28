@@ -15,7 +15,6 @@
 
 namespace scuba {
 namespace util {
-namespace {
 
 // Stream buffer that writes data to a file descriptor.
 // TODO(ed): Add buffering.
@@ -40,7 +39,6 @@ class fd_streambuf : public std::streambuf {
   std::shared_ptr<arpc::FileDescriptor> fd_;
 };
 
-}  // namespace
 }  // namespace util
 }  // namespace scuba
 
