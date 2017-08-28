@@ -18,6 +18,8 @@
 
 #include <scuba/runtime_service/yaml_file_descriptor_factory.h>
 
+using arpc::ClientContext;
+using arpc::Status;
 using flower::protocol::switchboard::ConstrainRequest;
 using flower::protocol::switchboard::ConstrainResponse;
 using flower::protocol::switchboard::Right;
@@ -80,9 +82,9 @@ const argdata_t* YAMLFileDescriptorFactory::GetMap(
     }
 
     // Request a new switchboard connection.
-    arpc::ClientContext context;
+    ClientContext context;
     ConstrainResponse response;
-    arpc::Status status =
+    Status status =
         switchboard_servers_->Constrain(&context, request, &response);
     if (!status.ok())
       throw YAML::ParserException(
