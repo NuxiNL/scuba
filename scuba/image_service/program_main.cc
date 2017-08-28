@@ -4,6 +4,7 @@
 // See the LICENSE file for details.
 
 #include <program.h>
+#include <stdio.h>
 
 #include <cstdlib>
 #include <memory>
@@ -31,6 +32,17 @@ void program_main(const argdata_t* ad) {
   Configuration configuration;
   ArgdataParser argdata_parser;
   configuration.Parse(*ad, &argdata_parser);
+
+  // Enable logging of failed assertions.
+  const std::shared_ptr<FileDescriptor>& logger_output =
+      configuration.logger_output();
+  if (logger_output) {
+    FILE* fp = fdopen(logger_output->get(), "w");
+    if (fp != nullptr) {
+      setvbuf(fp, nullptr, _IONBF, 0);
+      fswap(fp, stderr);
+    }
+  }
 
   // Extract file descriptors.
   const std::shared_ptr<FileDescriptor>& cri_switchboard_handle_fd =

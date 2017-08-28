@@ -30,4 +30,5 @@ message Configuration {
   fd image_directory = 2;
   fd root_directory = 3;
   fd containers_switchboard_handle = 4;
+  fd logger_output = 5;
 }

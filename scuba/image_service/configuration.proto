@@ -28,4 +28,5 @@ package scuba.image_service;
 message Configuration {
   fd cri_switchboard_handle = 1;
   fd image_directory = 2;
+  fd logger_output = 3;
 }
