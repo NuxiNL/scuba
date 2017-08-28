@@ -84,9 +84,9 @@ const argdata_t* YAMLFileDescriptorFactory::GetMap(
     // Request a new switchboard connection.
     ClientContext context;
     ConstrainResponse response;
-    Status status =
-        switchboard_servers_->Constrain(&context, request, &response);
-    if (!status.ok())
+    if (Status status =
+            switchboard_servers_->Constrain(&context, request, &response);
+        !status.ok())
       throw YAML::ParserException(
           mark,
           std::string("Failed to constrain switchboard channel: ") +
