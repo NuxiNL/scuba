@@ -10,12 +10,12 @@ interface with other container engines, such as rkt, OCI, etc.
 Scuba (contraction of 'Secure Kubernetes') is a daemon that implements
 the Container Runtime Interface, using [GRPC](https://grpc.io/). Instead
 of spawning containers, it simply launches
-[CloudABI](https://nuxi.nl/cloudabi/) processes. This allows you to run
-one or more nodes in a Kubernetes cluster capable of running strongly
-sandboxed applications. These jobs don't depend on network policies or
-key exchange to be secure. Instead, pods are simply able to connect to
-services if they are configured through their pod specification to do
-so.
+[CloudABI](https://nuxi.nl/cloudabi/) processes. This allows you to
+spawn one or more nodes in a Kubernetes cluster, capable of running
+strongly sandboxed applications. These jobs don't depend on network
+policies, password-based authentication or key exchange to be secure.
+Instead, pods are simply able to connect to services if they are
+configured through their pod specification to do so.
 
 # Using Scuba
 
