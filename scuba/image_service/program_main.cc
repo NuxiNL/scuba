@@ -34,13 +34,14 @@ void program_main(const argdata_t* ad) {
   configuration.Parse(*ad, &argdata_parser);
 
   // Enable logging of failed assertions.
-  const std::shared_ptr<FileDescriptor>& logger_output =
-      configuration.logger_output();
-  if (logger_output) {
+  if (const std::shared_ptr<FileDescriptor>& logger_output =
+          configuration.logger_output();
+      logger_output) {
     FILE* fp = fdopen(logger_output->get(), "w");
     if (fp != nullptr) {
       setvbuf(fp, nullptr, _IONBF, 0);
       fswap(fp, stderr);
+      fclose(fp);
     }
   }
 
