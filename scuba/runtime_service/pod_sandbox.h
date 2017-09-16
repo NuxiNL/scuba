@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <shared_mutex>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -38,7 +39,7 @@ class PodSandbox {
 
   bool MatchesFilter(
       std::optional<runtime::PodSandboxState> state,
-      const google::protobuf::Map<std::string, std::string>& labels) const;
+      const google::protobuf::Map<std::string, std::string>& labels);
 
   void CreateContainer(std::string_view container_id,
                        const runtime::ContainerConfig& config);
@@ -65,6 +66,7 @@ class PodSandbox {
   const google::protobuf::Map<std::string, std::string> annotations_;
   const IPAddressLease ip_address_lease_;
 
+  std::shared_mutex lock_;
   runtime::PodSandboxState state_;
   std::map<std::string, std::unique_ptr<Container>, std::less<>> containers_;
 

@@ -8,6 +8,7 @@
 
 #include <map>
 #include <memory>
+#include <shared_mutex>
 #include <string>
 #include <utility>
 
@@ -108,6 +109,7 @@ class RuntimeService final : public runtime::RuntimeService::Service {
   flower::protocol::switchboard::Switchboard::Stub* const switchboard_servers_;
   IPAddressAllocator* const ip_address_allocator_;
 
+  std::shared_mutex pod_sandboxes_lock_;
   std::map<std::string, std::unique_ptr<PodSandbox>, std::less<>>
       pod_sandboxes_;
 

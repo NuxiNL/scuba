@@ -9,6 +9,7 @@
 #include <chrono>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 
@@ -61,6 +62,7 @@ class Container {
   std::unique_ptr<arpc::FileDescriptor> OpenContainerLog_(
       const arpc::FileDescriptor& log_directory);
 
+  std::mutex lock_;
   runtime::ContainerState container_state_;
   std::optional<arpc::FileDescriptor> child_process_;
   std::chrono::system_clock::time_point start_time_;

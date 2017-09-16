@@ -19,6 +19,7 @@
 #include <fstream>
 #include <functional>
 #include <iomanip>
+#include <mutex>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -68,15 +69,26 @@ void Container::GetInfo(runtime::Container* info) {
   *info->mutable_metadata() = metadata_;
   *info->mutable_image() = image_;
   info->set_image_ref(image_.image());
+  *info->mutable_labels() = labels_;
+  *info->mutable_annotations() = annotations_;
+
+  std::unique_lock<std::mutex> lock(lock_);
   info->set_state(GetContainerState_());
   info->set_created_at(
       std::chrono::nanoseconds(creation_time_.time_since_epoch()).count());
-  *info->mutable_labels() = labels_;
-  *info->mutable_annotations() = annotations_;
 }
 
 void Container::GetStatus(ContainerStatus* status) {
   *status->mutable_metadata() = metadata_;
+  *status->mutable_image() = image_;
+  status->set_image_ref(image_.image());
+  *status->mutable_labels() = labels_;
+  *status->mutable_annotations() = annotations_;
+  *status->mutable_mounts() = mounts_;
+  status->set_log_path(log_path_);
+  // TODO(ed): reason, message.
+
+  std::unique_lock<std::mutex> lock(lock_);
   ContainerState state = GetContainerState_();
   status->set_state(state);
   switch (state) {
@@ -96,17 +108,11 @@ void Container::GetStatus(ContainerStatus* status) {
     default:
       assert(0 && "Container cannot be in an unknown state");
   }
-  *status->mutable_image() = image_;
-  status->set_image_ref(image_.image());
-  // TODO(ed): reason, message.
-  *status->mutable_labels() = labels_;
-  *status->mutable_annotations() = annotations_;
-  *status->mutable_mounts() = mounts_;
-  status->set_log_path(log_path_);
 }
 
 bool Container::MatchesFilter(std::optional<ContainerState> state,
                               const Map<std::string, std::string>& labels) {
+  std::unique_lock<std::mutex> lock(lock_);
   return (!state || *state == GetContainerState_()) &&
          std::includes(labels_.begin(), labels_.end(), labels.begin(),
                        labels.end(),
@@ -119,6 +125,7 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
                       const FileDescriptor& log_directory,
                       Switchboard::Stub* containers_switchboard_handle) {
   // Idempotence: container may already have been started.
+  std::unique_lock<std::mutex> lock(lock_);
   if (container_state_ != ContainerState::CONTAINER_CREATED)
     return;
 
@@ -170,6 +177,7 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
 }
 
 void Container::Stop(std::int64_t timeout) {
+  std::unique_lock<std::mutex> lock(lock_);
   if (container_state_ == ContainerState::CONTAINER_RUNNING) {
     child_process_.reset();
     container_state_ = ContainerState::CONTAINER_EXITED;
