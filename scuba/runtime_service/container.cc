@@ -112,11 +112,17 @@ void Container::GetStatus(ContainerStatus* status) {
 
 bool Container::MatchesFilter(std::optional<ContainerState> state,
                               const Map<std::string, std::string>& labels) {
+  // Perform subset match on labels. We can't use std::includes() here,
+  // as these maps use hashing.
+  for (const auto& label : labels) {
+    const auto& match = labels_.find(label.first);
+    if (match == labels_.end() || label.second != match->second)
+      return false;
+  }
+  if (!state)
+    return true;
   std::unique_lock<std::mutex> lock(lock_);
-  return (!state || *state == GetContainerState_()) &&
-         std::includes(labels_.begin(), labels_.end(), labels.begin(),
-                       labels.end(),
-                       std::less<std::pair<std::string, std::string>>());
+  return *state == GetContainerState_();
 }
 
 void Container::Start(const PodSandboxMetadata& pod_metadata,
