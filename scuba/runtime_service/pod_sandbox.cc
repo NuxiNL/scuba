@@ -56,7 +56,7 @@ void PodSandbox::GetInfo(runtime::PodSandbox* info) {
   *info->mutable_labels() = labels_;
   *info->mutable_annotations() = annotations_;
 
-  std::shared_lock<std::shared_mutex> lock(lock_);
+  std::shared_lock lock(lock_);
   info->set_state(state_);
 }
 
@@ -67,7 +67,7 @@ void PodSandbox::GetStatus(PodSandboxStatus* status) {
   *status->mutable_labels() = labels_;
   *status->mutable_annotations() = annotations_;
 
-  std::shared_lock<std::shared_mutex> lock(lock_);
+  std::shared_lock lock(lock_);
   status->set_state(state_);
 }
 
@@ -75,7 +75,7 @@ void PodSandbox::Stop() {
   // Do a forced stop of all containers in the pod sandbox. Switch the
   // state to SANDBOX_NOTREADY. Otherwise, Kubernetes will not attempt
   // to destroy it.
-  std::unique_lock<std::shared_mutex> lock(lock_);
+  std::unique_lock lock(lock_);
   for (const auto& container : containers_)
     container.second->Stop(0);
   state_ = PodSandboxState::SANDBOX_NOTREADY;
@@ -92,13 +92,13 @@ bool PodSandbox::MatchesFilter(std::optional<PodSandboxState> state,
   }
   if (!state)
     return true;
-  std::shared_lock<std::shared_mutex> lock(lock_);
+  std::shared_lock lock(lock_);
   return *state == state_;
 }
 
 void PodSandbox::CreateContainer(std::string_view container_id,
                                  const ContainerConfig& config) {
-  std::unique_lock<std::shared_mutex> lock(lock_);
+  std::unique_lock lock(lock_);
   if (state_ != PodSandboxState::SANDBOX_READY)
     throw std::logic_error(std::string(container_id) +
                            " has already been terminated");
@@ -112,7 +112,7 @@ void PodSandbox::CreateContainer(std::string_view container_id,
 }
 
 void PodSandbox::RemoveContainer(std::string_view container_id) {
-  std::unique_lock<std::shared_mutex> lock(lock_);
+  std::unique_lock lock(lock_);
   containers_.erase(containers_.find(container_id));
 }
 
@@ -120,7 +120,7 @@ void PodSandbox::StartContainer(
     std::string_view container_id, const FileDescriptor& root_directory,
     const FileDescriptor& image_directory,
     Switchboard::Stub* containers_switchboard_handle) {
-  std::shared_lock<std::shared_mutex> lock(lock_);
+  std::shared_lock lock(lock_);
   if (state_ != PodSandboxState::SANDBOX_READY)
     throw std::logic_error(std::string(container_id) +
                            " has already been terminated");
@@ -142,7 +142,7 @@ void PodSandbox::StartContainer(
 
 bool PodSandbox::StopContainer(std::string_view container_id,
                                std::int64_t timeout) {
-  std::shared_lock<std::shared_mutex> lock(lock_);
+  std::shared_lock lock(lock_);
   auto container = containers_.find(container_id);
   if (container == containers_.end())
     return false;
@@ -155,7 +155,7 @@ PodSandbox::GetContainerInfo(std::string_view container_id,
                              std::optional<ContainerState> state,
                              const Map<std::string, std::string>& labels) {
   std::vector<std::pair<std::string, runtime::Container>> infos;
-  std::shared_lock<std::shared_mutex> lock(lock_);
+  std::shared_lock lock(lock_);
   for (const auto& container : containers_) {
     // Apply filters.
     if (!container_id.empty() && container_id != container.first)
@@ -171,7 +171,7 @@ PodSandbox::GetContainerInfo(std::string_view container_id,
 
 bool PodSandbox::GetContainerStatus(std::string_view container_id,
                                     ContainerStatus* status) {
-  std::shared_lock<std::shared_mutex> lock(lock_);
+  std::shared_lock lock(lock_);
   auto container = containers_.find(container_id);
   if (container == containers_.end())
     return false;

@@ -100,7 +100,7 @@ Status RuntimeService::RunPodSandbox(ServerContext* context,
       NamingScheme::CreatePodSandboxName(config.metadata());
 
   // Idempotence: only create the pod sandbox if it doesn't exist yet.
-  std::unique_lock<std::shared_mutex> lock(pod_sandboxes_lock_);
+  std::unique_lock lock(pod_sandboxes_lock_);
   auto pod_sandbox = pod_sandboxes_.find(pod_sandbox_id);
   if (pod_sandbox == pod_sandboxes_.end()) {
     IPAddressLease ip_address_lease;
@@ -122,7 +122,7 @@ Status RuntimeService::RunPodSandbox(ServerContext* context,
 Status RuntimeService::StopPodSandbox(ServerContext* context,
                                       const StopPodSandboxRequest* request,
                                       StopPodSandboxResponse* response) {
-  std::shared_lock<std::shared_mutex> lock(pod_sandboxes_lock_);
+  std::shared_lock lock(pod_sandboxes_lock_);
   auto pod_sandbox = pod_sandboxes_.find(request->pod_sandbox_id());
   if (pod_sandbox == pod_sandboxes_.end())
     return {StatusCode::NOT_FOUND, "Pod sandbox does not exist"};
@@ -133,7 +133,7 @@ Status RuntimeService::StopPodSandbox(ServerContext* context,
 Status RuntimeService::RemovePodSandbox(ServerContext* context,
                                         const RemovePodSandboxRequest* request,
                                         RemovePodSandboxResponse* response) {
-  std::unique_lock<std::shared_mutex> lock(pod_sandboxes_lock_);
+  std::unique_lock lock(pod_sandboxes_lock_);
   pod_sandboxes_.erase(request->pod_sandbox_id());
   return Status::OK;
 }
@@ -142,7 +142,7 @@ Status RuntimeService::PodSandboxStatus(ServerContext* context,
                                         const PodSandboxStatusRequest* request,
                                         PodSandboxStatusResponse* response) {
   const std::string& pod_sandbox_id = request->pod_sandbox_id();
-  std::shared_lock<std::shared_mutex> lock(pod_sandboxes_lock_);
+  std::shared_lock lock(pod_sandboxes_lock_);
   auto pod_sandbox = pod_sandboxes_.find(pod_sandbox_id);
   if (pod_sandbox == pod_sandboxes_.end())
     return {StatusCode::NOT_FOUND, "Pod sandbox does not exist"};
@@ -162,7 +162,7 @@ Status RuntimeService::ListPodSandbox(ServerContext* context,
   if (filter.has_state())
     state = filter.state().state();
 
-  std::shared_lock<std::shared_mutex> lock(pod_sandboxes_lock_);
+  std::shared_lock lock(pod_sandboxes_lock_);
   for (const auto& pod_sandbox : pod_sandboxes_) {
     // Apply filters.
     if (!pod_sandbox_id.empty() && pod_sandbox_id != pod_sandbox.first)
@@ -180,7 +180,7 @@ Status RuntimeService::ListPodSandbox(ServerContext* context,
 Status RuntimeService::CreateContainer(ServerContext* context,
                                        const CreateContainerRequest* request,
                                        CreateContainerResponse* response) {
-  std::shared_lock<std::shared_mutex> lock(pod_sandboxes_lock_);
+  std::shared_lock lock(pod_sandboxes_lock_);
   auto pod_sandbox = pod_sandboxes_.find(request->pod_sandbox_id());
   if (pod_sandbox == pod_sandboxes_.end())
     return {StatusCode::NOT_FOUND, "Pod sandbox does not exist"};
@@ -199,7 +199,7 @@ Status RuntimeService::StartContainer(ServerContext* context,
                                       StartContainerResponse* response) {
   auto ids =
       NamingScheme::DecomposePodSandboxContainerName(request->container_id());
-  std::shared_lock<std::shared_mutex> lock(pod_sandboxes_lock_);
+  std::shared_lock lock(pod_sandboxes_lock_);
   auto pod_sandbox = pod_sandboxes_.find(ids.first);
   if (pod_sandbox == pod_sandboxes_.end())
     return {StatusCode::NOT_FOUND, "Pod sandbox does not exist"};
@@ -219,7 +219,7 @@ Status RuntimeService::StopContainer(ServerContext* context,
                                      StopContainerResponse* response) {
   auto ids =
       NamingScheme::DecomposePodSandboxContainerName(request->container_id());
-  std::shared_lock<std::shared_mutex> lock(pod_sandboxes_lock_);
+  std::shared_lock lock(pod_sandboxes_lock_);
   auto pod_sandbox = pod_sandboxes_.find(ids.first);
   if (pod_sandbox == pod_sandboxes_.end())
     return {StatusCode::NOT_FOUND, "Pod sandbox does not exist"};
@@ -233,7 +233,7 @@ Status RuntimeService::RemoveContainer(ServerContext* context,
                                        RemoveContainerResponse* response) {
   auto ids =
       NamingScheme::DecomposePodSandboxContainerName(request->container_id());
-  std::shared_lock<std::shared_mutex> lock(pod_sandboxes_lock_);
+  std::shared_lock lock(pod_sandboxes_lock_);
   auto pod_sandbox = pod_sandboxes_.find(ids.first);
   if (pod_sandbox != pod_sandboxes_.end())
     pod_sandbox->second->RemoveContainer(ids.second);
@@ -250,7 +250,7 @@ Status RuntimeService::ListContainers(ServerContext* context,
   if (filter.has_state())
     state = filter.state().state();
 
-  std::shared_lock<std::shared_mutex> lock(pod_sandboxes_lock_);
+  std::shared_lock lock(pod_sandboxes_lock_);
   for (const auto& pod_sandbox : pod_sandboxes_) {
     // Apply filters.
     if (!pod_sandbox_id.empty() && pod_sandbox_id != pod_sandbox.first)
@@ -275,7 +275,7 @@ Status RuntimeService::ContainerStatus(ServerContext* context,
                                        ContainerStatusResponse* response) {
   const std::string& id = request->container_id();
   auto ids = NamingScheme::DecomposePodSandboxContainerName(id);
-  std::shared_lock<std::shared_mutex> lock(pod_sandboxes_lock_);
+  std::shared_lock lock(pod_sandboxes_lock_);
   auto pod_sandbox = pod_sandboxes_.find(ids.first);
   if (pod_sandbox == pod_sandboxes_.end())
     return {StatusCode::NOT_FOUND, "Pod sandbox does not exist"};

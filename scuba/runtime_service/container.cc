@@ -72,7 +72,7 @@ void Container::GetInfo(runtime::Container* info) {
   *info->mutable_labels() = labels_;
   *info->mutable_annotations() = annotations_;
 
-  std::unique_lock<std::mutex> lock(lock_);
+  std::unique_lock lock(lock_);
   info->set_state(GetContainerState_());
   info->set_created_at(
       std::chrono::nanoseconds(creation_time_.time_since_epoch()).count());
@@ -88,7 +88,7 @@ void Container::GetStatus(ContainerStatus* status) {
   status->set_log_path(log_path_);
   // TODO(ed): reason, message.
 
-  std::unique_lock<std::mutex> lock(lock_);
+  std::unique_lock lock(lock_);
   ContainerState state = GetContainerState_();
   status->set_state(state);
   switch (state) {
@@ -121,7 +121,7 @@ bool Container::MatchesFilter(std::optional<ContainerState> state,
   }
   if (!state)
     return true;
-  std::unique_lock<std::mutex> lock(lock_);
+  std::unique_lock lock(lock_);
   return *state == GetContainerState_();
 }
 
@@ -131,7 +131,7 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
                       const FileDescriptor& log_directory,
                       Switchboard::Stub* containers_switchboard_handle) {
   // Idempotence: container may already have been started.
-  std::unique_lock<std::mutex> lock(lock_);
+  std::unique_lock lock(lock_);
   if (container_state_ != ContainerState::CONTAINER_CREATED)
     return;
 
@@ -183,7 +183,7 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
 }
 
 void Container::Stop(std::int64_t timeout) {
-  std::unique_lock<std::mutex> lock(lock_);
+  std::unique_lock lock(lock_);
   if (container_state_ == ContainerState::CONTAINER_RUNNING) {
     child_process_.reset();
     container_state_ = ContainerState::CONTAINER_EXITED;
