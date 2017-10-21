@@ -3,12 +3,10 @@
 // This file is distributed under a 2-clause BSD license.
 // See the LICENSE file for details.
 
-#include <sys/procdesc.h>
-
 #include <fcntl.h>
-#include <program.h>
 #include <signal.h>
 #include <unistd.h>
+#include <uv.h>
 
 #include <algorithm>
 #include <cassert>
@@ -53,6 +51,9 @@ using yaml2argdata::YAMLBuilder;
 using yaml2argdata::YAMLCanonicalizingFactory;
 using yaml2argdata::YAMLErrorFactory;
 
+std::mutex Container::child_loop_lock_;
+uv_loop_t Container::child_loop_;
+
 Container::Container(const ContainerConfig& config)
     : metadata_(config.metadata()),
       image_(config.image()),
@@ -63,6 +64,29 @@ Container::Container(const ContainerConfig& config)
       log_path_(config.log_path()),
       argdata_(config.argdata()),
       container_state_(ContainerState::CONTAINER_CREATED) {
+  // If this is the first container to be created, create an event loop
+  // with which we can track termination of child processes.
+  static std::once_flag child_loop_initialized;
+  std::call_once(child_loop_initialized, []() {
+    if (uv_loop_init(&child_loop_) != 0)
+      std::terminate();
+  });
+}
+
+Container::~Container() {
+  std::unique_lock lock(child_loop_lock_);
+  if (container_state_ != ContainerState::CONTAINER_CREATED) {
+    // Child process is still running. Force termination.
+    uv_close(reinterpret_cast<uv_handle_t*>(&child_process_),
+             [](uv_handle_t* handle) {
+               Container* container =
+                   reinterpret_cast<Container*>(handle->data);
+               container->container_state_ = ContainerState::CONTAINER_EXITED;
+             });
+    uv_run(&child_loop_, UV_RUN_NOWAIT);
+    assert(container_state_ == ContainerState::CONTAINER_EXITED &&
+           "Destroying container while the child process is running");
+  }
 }
 
 void Container::GetInfo(runtime::Container* info) {
@@ -72,7 +96,7 @@ void Container::GetInfo(runtime::Container* info) {
   *info->mutable_labels() = labels_;
   *info->mutable_annotations() = annotations_;
 
-  std::unique_lock lock(lock_);
+  std::unique_lock lock(child_loop_lock_);
   info->set_state(GetContainerState_());
   info->set_created_at(
       std::chrono::nanoseconds(creation_time_.time_since_epoch()).count());
@@ -88,7 +112,7 @@ void Container::GetStatus(ContainerStatus* status) {
   status->set_log_path(log_path_);
   // TODO(ed): reason, message.
 
-  std::unique_lock lock(lock_);
+  std::unique_lock lock(child_loop_lock_);
   ContainerState state = GetContainerState_();
   status->set_state(state);
   switch (state) {
@@ -121,7 +145,7 @@ bool Container::MatchesFilter(std::optional<ContainerState> state,
   }
   if (!state)
     return true;
-  std::unique_lock lock(lock_);
+  std::unique_lock lock(child_loop_lock_);
   return *state == GetContainerState_();
 }
 
@@ -131,7 +155,7 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
                       const FileDescriptor& log_directory,
                       Switchboard::Stub* containers_switchboard_handle) {
   // Idempotence: container may already have been started.
-  std::unique_lock lock(lock_);
+  std::unique_lock lock(child_loop_lock_);
   if (container_state_ != ContainerState::CONTAINER_CREATED)
     return;
 
@@ -172,37 +196,34 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
   std::istringstream argdata_stream(argdata_);
   const argdata_t* argdata = builder.Build(&argdata_stream);
 
-  // Fork and execute child process.
-  int child = program_spawn(executable.get(), argdata);
-  if (child < 0)
-    throw std::system_error(errno, std::system_category(),
-                            "Failed to fork process");
+  // Create a process handle through the event loop.
+  uv_process_options_t options = {};
+  options.exit_cb = [](uv_process_t* process, int64_t exit_status,
+                       int term_signal) {
+    Container* container = reinterpret_cast<Container*>(process->data);
+    container->container_state_ = ContainerState::CONTAINER_EXITED;
+    container->finish_time_ = std::chrono::system_clock::now();
+    container->exit_code_ = term_signal == 0 ? exit_status : term_signal;
+  };
+  options.executable = executable.get();
+  options.argdata = argdata;
+  child_process_.data = this;
+  if (int error = uv_spawn(&child_loop_, &child_process_, &options); error != 0)
+    throw std::runtime_error(std::string("Failed to spawn process: ") +
+                             uv_strerror(error));
   container_state_ = ContainerState::CONTAINER_RUNNING;
-  child_process_.emplace(child);
   start_time_ = std::chrono::system_clock::now();
 }
 
 void Container::Stop(std::int64_t timeout) {
-  std::unique_lock lock(lock_);
-  if (container_state_ == ContainerState::CONTAINER_RUNNING) {
-    child_process_.reset();
-    container_state_ = ContainerState::CONTAINER_EXITED;
-    finish_time_ = std::chrono::system_clock::now();
-    exit_code_ = SIGKILL;
-  }
+  std::unique_lock lock(child_loop_lock_);
+  if (container_state_ != ContainerState::CONTAINER_CREATED)
+    uv_process_kill(&child_process_, SIGKILL);
 }
 
 ContainerState Container::GetContainerState_() {
-  if (container_state_ == ContainerState::CONTAINER_RUNNING) {
-    siginfo_t si;
-    pdwait(child_process_->get(), &si, WNOHANG);
-    if (si.si_signo == SIGCHLD) {
-      child_process_.reset();
-      container_state_ = ContainerState::CONTAINER_EXITED;
-      finish_time_ = std::chrono::system_clock::now();
-      exit_code_ = si.si_status;
-    }
-  }
+  if (container_state_ != ContainerState::CONTAINER_CREATED)
+    uv_run(&child_loop_, UV_RUN_NOWAIT);
   return container_state_;
 }
 
