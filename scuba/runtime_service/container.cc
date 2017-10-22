@@ -76,7 +76,7 @@ Container::Container(const ContainerConfig& config)
 Container::~Container() {
   std::unique_lock lock(child_loop_lock_);
   if (container_state_ != ContainerState::CONTAINER_CREATED) {
-    // Child process is still running. Force termination.
+    // Child process spawned. Unregister process handle from the event loop.
     uv_close(reinterpret_cast<uv_handle_t*>(&child_process_),
              [](uv_handle_t* handle) {
                Container* container =
@@ -97,7 +97,8 @@ void Container::GetInfo(runtime::Container* info) {
   *info->mutable_annotations() = annotations_;
 
   std::unique_lock lock(child_loop_lock_);
-  info->set_state(GetContainerState_());
+  uv_run(&child_loop_, UV_RUN_NOWAIT);
+  info->set_state(container_state_);
   info->set_created_at(
       std::chrono::nanoseconds(creation_time_.time_since_epoch()).count());
 }
@@ -113,9 +114,9 @@ void Container::GetStatus(ContainerStatus* status) {
   // TODO(ed): reason, message.
 
   std::unique_lock lock(child_loop_lock_);
-  ContainerState state = GetContainerState_();
-  status->set_state(state);
-  switch (state) {
+  uv_run(&child_loop_, UV_RUN_NOWAIT);
+  status->set_state(container_state_);
+  switch (container_state_) {
     case ContainerState::CONTAINER_EXITED:
       status->set_finished_at(
           std::chrono::nanoseconds(finish_time_.time_since_epoch()).count());
@@ -146,7 +147,8 @@ bool Container::MatchesFilter(std::optional<ContainerState> state,
   if (!state)
     return true;
   std::unique_lock lock(child_loop_lock_);
-  return *state == GetContainerState_();
+  uv_run(&child_loop_, UV_RUN_NOWAIT);
+  return *state == container_state_;
 }
 
 void Container::Start(const PodSandboxMetadata& pod_metadata,
@@ -219,12 +221,6 @@ void Container::Stop(std::int64_t timeout) {
   std::unique_lock lock(child_loop_lock_);
   if (container_state_ != ContainerState::CONTAINER_CREATED)
     uv_process_kill(&child_process_, SIGKILL);
-}
-
-ContainerState Container::GetContainerState_() {
-  if (container_state_ != ContainerState::CONTAINER_CREATED)
-    uv_run(&child_loop_, UV_RUN_NOWAIT);
-  return container_state_;
 }
 
 std::unique_ptr<FileDescriptor> Container::OpenContainerLog_(

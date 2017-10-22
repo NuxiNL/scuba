@@ -50,8 +50,6 @@ class Container {
   void operator=(Container) = delete;
 
  private:
-  runtime::ContainerState GetContainerState_();
-
   std::unique_ptr<arpc::FileDescriptor> OpenContainerLog_(
       const arpc::FileDescriptor& log_directory);
 
