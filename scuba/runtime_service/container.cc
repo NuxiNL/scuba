@@ -4,6 +4,7 @@
 // See the LICENSE file for details.
 
 #include <fcntl.h>
+#include <program.h>
 #include <signal.h>
 #include <unistd.h>
 #include <uv.h>
@@ -199,20 +200,19 @@ void Container::Start(const PodSandboxMetadata& pod_metadata,
   const argdata_t* argdata = builder.Build(&argdata_stream);
 
   // Create a process handle through the event loop.
-  uv_process_options_t options = {};
-  options.exit_cb = [](uv_process_t* process, int64_t exit_status,
-                       int term_signal) {
-    Container* container = reinterpret_cast<Container*>(process->data);
-    container->container_state_ = ContainerState::CONTAINER_EXITED;
-    container->finish_time_ = std::chrono::system_clock::now();
-    container->exit_code_ = term_signal == 0 ? exit_status : term_signal;
-  };
-  options.executable = executable.get();
-  options.argdata = argdata;
   child_process_.data = this;
-  if (int error = uv_spawn(&child_loop_, &child_process_, &options); error != 0)
-    throw std::runtime_error(std::string("Failed to spawn process: ") +
-                             uv_strerror(error));
+  if (int error = program_spawn(
+          &child_loop_, &child_process_, executable.get(), argdata,
+          [](uv_process_t* process, int64_t exit_status, int term_signal) {
+            Container* container = reinterpret_cast<Container*>(process->data);
+            container->container_state_ = ContainerState::CONTAINER_EXITED;
+            container->finish_time_ = std::chrono::system_clock::now();
+            container->exit_code_ =
+                term_signal == 0 ? exit_status : term_signal;
+          });
+      error != 0)
+    throw std::system_error(error, std::system_category(),
+                            "Failed to spawn process");
   container_state_ = ContainerState::CONTAINER_RUNNING;
   start_time_ = std::chrono::system_clock::now();
 }
