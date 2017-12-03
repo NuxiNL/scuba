@@ -242,7 +242,7 @@ std::unique_ptr<FileDescriptor> Container::OpenContainerLog_(
 
   // Read messages from the pipe and write them into the log file in the
   // format that Kubernetes expects.
-  std::thread([ logfd{std::move(logfd)}, readfd{std::move(readfd)} ]() mutable {
+  std::thread([logfd{std::move(logfd)}, readfd{std::move(readfd)}]() mutable {
     // Startup message.
     fd_streambuf logstreambuf(std::move(logfd));
     std::ostream logfile(&logstreambuf);

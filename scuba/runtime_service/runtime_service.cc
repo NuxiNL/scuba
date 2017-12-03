@@ -58,11 +58,8 @@ using runtime::StopContainerResponse;
 using runtime::StopPodSandboxRequest;
 using runtime::StopPodSandboxResponse;
 using runtime::UpdateRuntimeConfigRequest;
-using runtime::UpdateRuntimeConfigRequest;
 using runtime::UpdateRuntimeConfigResponse;
 using runtime::VersionRequest;
-using runtime::VersionRequest;
-using runtime::VersionResponse;
 using runtime::VersionResponse;
 using scuba::runtime_service::RuntimeService;
 
