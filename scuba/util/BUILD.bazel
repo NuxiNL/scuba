@@ -1,0 +1,16 @@
+cc_library(
+    name = "fd_streambuf",
+    hdrs = ["fd_streambuf.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "grpc_connection_injector",
+    hdrs = ["grpc_connection_injector.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_github_nuxinl_arpc//:arpc",
+        "@com_github_nuxinl_flower//:flower_protocol",
+    ],
+)

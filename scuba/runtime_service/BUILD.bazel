@@ -1,0 +1,38 @@
+load("@com_github_nuxinl_arpc//:aprotoc.bzl", "aprotoc")
+
+cc_binary(
+    name = "scuba_runtime_service",
+    srcs = [
+        "configuration.ad.h",
+        "container.cc",
+        "container.h",
+        "ip_address_allocator.cc",
+        "ip_address_allocator.h",
+        "iso8601_timestamp.cc",
+        "iso8601_timestamp.h",
+        "naming_scheme.cc",
+        "naming_scheme.h",
+        "pod_sandbox.cc",
+        "pod_sandbox.h",
+        "program_main.cc",
+        "runtime_service.cc",
+        "runtime_service.h",
+        "yaml_file_descriptor_factory.cc",
+        "yaml_file_descriptor_factory.h",
+    ],
+    deps = [
+        "//k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime:api_proto",
+        "//scuba/util:fd_streambuf",
+        "//scuba/util:grpc_connection_injector",
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_github_jbeder_yaml_cpp//:yaml_cpp",
+        "@com_github_nuxinl_arpc//:arpc",
+        "@com_github_nuxinl_flower//:flower_protocol",
+        "@com_github_nuxinl_yaml2argdata//:yaml2argdata",
+    ],
+)
+
+aprotoc(
+    name = "scuba_runtime_service_configuration",
+    src = "configuration.proto",
+)

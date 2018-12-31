@@ -1,0 +1,23 @@
+load("@com_github_nuxinl_arpc//:aprotoc.bzl", "aprotoc")
+
+cc_binary(
+    name = "scuba_image_service",
+    srcs = [
+        "configuration.ad.h",
+        "image_service.cc",
+        "image_service.h",
+        "program_main.cc",
+    ],
+    deps = [
+        "//k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime:api_proto",
+        "//scuba/util:grpc_connection_injector",
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_github_nuxinl_arpc//:arpc",
+        "@com_github_nuxinl_flower//:flower_protocol",
+    ],
+)
+
+aprotoc(
+    name = "scuba_image_service_configuration",
+    src = "configuration.proto",
+)
