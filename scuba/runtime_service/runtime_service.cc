@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: BSD-2-Clause
 
+#include "scuba/runtime_service/runtime_service.h"
+
 #include <iostream>
 #include <optional>
 #include <shared_mutex>
@@ -10,11 +12,9 @@
 #include <thread>
 #include <utility>
 
-#include <grpc++/grpc++.h>
-#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.h>
-
-#include <scuba/runtime_service/naming_scheme.h>
-#include <scuba/runtime_service/runtime_service.h>
+#include "grpc++/grpc++.h"
+#include "k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.h"
+#include "scuba/runtime_service/naming_scheme.h"
 
 using grpc::ServerContext;
 using grpc::Status;

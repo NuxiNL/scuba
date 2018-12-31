@@ -7,9 +7,9 @@
 
 #include <string_view>
 
-#include <arpc++/arpc++.h>
-#include <grpc++/grpc++.h>
-#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.h>
+#include "arpc++/arpc++.h"
+#include "grpc++/grpc++.h"
+#include "k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.h"
 
 namespace scuba {
 namespace image_service {

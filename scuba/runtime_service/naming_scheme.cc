@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: BSD-2-Clause
 
+#include "scuba/runtime_service/naming_scheme.h"
+
 #include <algorithm>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
 
-#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.h>
-
-#include <scuba/runtime_service/naming_scheme.h>
+#include "k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.h"
 
 using runtime::ContainerMetadata;
 using runtime::PodSandboxMetadata;

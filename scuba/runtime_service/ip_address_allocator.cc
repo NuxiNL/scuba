@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: BSD-2-Clause
 
+#include "scuba/runtime_service/ip_address_allocator.h"
+
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -10,8 +12,6 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-
-#include <scuba/runtime_service/ip_address_allocator.h>
 
 using scuba::runtime_service::IPAddressAllocator;
 using scuba::runtime_service::IPAddressLease;

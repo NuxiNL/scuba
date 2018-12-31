@@ -4,17 +4,15 @@
 
 #include <program.h>
 #include <stdio.h>
-
 #include <cstdlib>
 #include <memory>
 
-#include <arpc++/arpc++.h>
-#include <flower/protocol/switchboard.ad.h>
-#include <grpc++/grpc++.h>
-
-#include <scuba/image_service/configuration.ad.h>
-#include <scuba/image_service/image_service.h>
-#include <scuba/util/grpc_connection_injector.h>
+#include "arpc++/arpc++.h"
+#include "flower/protocol/switchboard.ad.h"
+#include "grpc++/grpc++.h"
+#include "scuba/image_service/configuration.ad.h"
+#include "scuba/image_service/image_service.h"
+#include "scuba/util/grpc_connection_injector.h"
 
 using arpc::ArgdataParser;
 using arpc::ClientContext;

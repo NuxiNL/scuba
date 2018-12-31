@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: BSD-2-Clause
 
+#include "scuba/runtime_service/yaml_file_descriptor_factory.h"
+
 #include <algorithm>
 #include <sstream>
 #include <string>
@@ -9,13 +11,11 @@
 #include <utility>
 #include <vector>
 
-#include <arpc++/arpc++.h>
-#include <flower/protocol/switchboard.ad.h>
-#include <yaml-cpp/exceptions.h>
-#include <yaml-cpp/mark.h>
-#include <argdata.hpp>
-
-#include <scuba/runtime_service/yaml_file_descriptor_factory.h>
+#include "argdata.hpp"
+#include "arpc++/arpc++.h"
+#include "flower/protocol/switchboard.ad.h"
+#include "yaml-cpp/exceptions.h"
+#include "yaml-cpp/mark.h"
 
 using arpc::ClientContext;
 using arpc::Status;

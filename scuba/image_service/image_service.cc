@@ -2,20 +2,18 @@
 //
 // SPDX-License-Identifier: BSD-2-Clause
 
-#include <sys/stat.h>
+#include "scuba/image_service/image_service.h"
 
 #include <dirent.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
-
 #include <algorithm>
 #include <cstring>
 #include <string_view>
 
-#include <grpc++/grpc++.h>
-#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.h>
-
-#include <scuba/image_service/image_service.h>
+#include "grpc++/grpc++.h"
+#include "k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.h"
 
 using grpc::ServerContext;
 using grpc::Status;

@@ -6,11 +6,10 @@
 #define SCUBA_UTIL_FD_STREAMBUF_H
 
 #include <unistd.h>
-
 #include <memory>
 #include <streambuf>
 
-#include <arpc++/arpc++.h>
+#include "arpc++/arpc++.h"
 
 namespace scuba {
 namespace util {

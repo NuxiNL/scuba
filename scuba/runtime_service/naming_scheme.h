@@ -9,7 +9,7 @@
 #include <string_view>
 #include <utility>
 
-#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.h>
+#include "k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.pb.h"
 
 namespace scuba {
 namespace runtime_service {

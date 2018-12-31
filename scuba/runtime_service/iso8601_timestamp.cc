@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: BSD-2-Clause
 
-#include <time.h>
+#include "scuba/runtime_service/iso8601_timestamp.h"
 
+#include <time.h>
 #include <iomanip>
 #include <ostream>
-
-#include <scuba/runtime_service/iso8601_timestamp.h>
 
 using scuba::runtime_service::ISO8601Timestamp;
 

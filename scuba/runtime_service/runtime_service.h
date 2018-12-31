@@ -11,12 +11,11 @@
 #include <string>
 #include <utility>
 
-#include <arpc++/arpc++.h>
-#include <flower/protocol/switchboard.ad.h>
-#include <grpc++/grpc++.h>
-#include <k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.h>
-
-#include <scuba/runtime_service/pod_sandbox.h>
+#include "arpc++/arpc++.h"
+#include "flower/protocol/switchboard.ad.h"
+#include "grpc++/grpc++.h"
+#include "k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime/api.grpc.pb.h"
+#include "scuba/runtime_service/pod_sandbox.h"
 
 namespace scuba {
 namespace runtime_service {

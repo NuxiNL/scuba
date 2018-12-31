@@ -4,18 +4,16 @@
 
 #include <program.h>
 #include <stdio.h>
-
 #include <cstdlib>
 #include <memory>
 
-#include <arpc++/arpc++.h>
-#include <flower/protocol/switchboard.ad.h>
-#include <grpc++/grpc++.h>
-
-#include <scuba/runtime_service/configuration.ad.h>
-#include <scuba/runtime_service/ip_address_allocator.h>
-#include <scuba/runtime_service/runtime_service.h>
-#include <scuba/util/grpc_connection_injector.h>
+#include "arpc++/arpc++.h"
+#include "flower/protocol/switchboard.ad.h"
+#include "grpc++/grpc++.h"
+#include "scuba/runtime_service/configuration.ad.h"
+#include "scuba/runtime_service/ip_address_allocator.h"
+#include "scuba/runtime_service/runtime_service.h"
+#include "scuba/util/grpc_connection_injector.h"
 
 using arpc::ArgdataParser;
 using arpc::ClientContext;
