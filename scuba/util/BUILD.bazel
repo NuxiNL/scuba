@@ -10,7 +10,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_grpc_grpc//:grpc++",
-        "@com_github_nuxinl_arpc//:arpc",
-        "@com_github_nuxinl_flower//:flower_protocol",
+        "@org_cloudabi_arpc//:arpc",
+        "@org_cloudabi_flower//:flower_protocol",
     ],
 )

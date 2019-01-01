@@ -1,4 +1,4 @@
-load("@com_github_nuxinl_arpc//:aprotoc.bzl", "aprotoc")
+load("@org_cloudabi_arpc//:aprotoc.bzl", "aprotoc")
 
 cc_binary(
     name = "scuba_runtime_service",
@@ -26,9 +26,9 @@ cc_binary(
         "//scuba/util:grpc_connection_injector",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_jbeder_yaml_cpp//:yaml_cpp",
-        "@com_github_nuxinl_arpc//:arpc",
-        "@com_github_nuxinl_flower//:flower_protocol",
-        "@com_github_nuxinl_yaml2argdata//:yaml2argdata",
+        "@org_cloudabi_arpc//:arpc",
+        "@org_cloudabi_flower//:flower_protocol",
+        "@org_cloudabi_yaml2argdata//:yaml2argdata",
     ],
 )
 
