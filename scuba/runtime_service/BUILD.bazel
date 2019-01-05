@@ -1,6 +1,7 @@
 load("@org_cloudabi_arpc//:aprotoc.bzl", "aprotoc")
+load("@org_cloudabi_bazel_toolchains_cloudabi//:cc.bzl", "cc_binary_cloudabi")
 
-cc_binary(
+cc_binary_cloudabi(
     name = "scuba_runtime_service",
     srcs = [
         "configuration.ad.h",

@@ -3,12 +3,6 @@ workspace(name = "org_cloudabi_scuba")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
-    name = "org_cloudabi_argdata",
-    commit = "6299455171a28831876d078c59a6634de6f6700b",
-    remote = "https://github.com/NuxiNL/argdata.git",
-)
-
-git_repository(
     name = "org_cloudabi_arpc",
     commit = "81305e311c0559fe7a64a98ce8ac1aa7051c7a4d",
     remote = "https://github.com/NuxiNL/arpc.git",
@@ -16,7 +10,7 @@ git_repository(
 
 git_repository(
     name = "org_cloudabi_bazel_toolchains_cloudabi",
-    commit = "6bafd065d82909c9a5db4b8ef6619855ac3408f1",
+    commit = "d39dbe2b71817a5b238eeb9c445cab46a15bf507",
     remote = "https://github.com/NuxiNL/bazel-toolchains-cloudabi.git",
 )
 
